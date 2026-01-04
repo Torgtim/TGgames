@@ -1,82 +1,75 @@
 
+
 <!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Rickroll Clicker</title>
+<title>Ultimate Rickroll Clicker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
 <style>
-  body {
-    margin: 0;
-    height: 100vh;
-    background: black;
-    color: #00ff66;
-    font-family: monospace;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
-
-  h1 { font-size: 3rem; }
-  #score { font-size: 2rem; margin: 10px; }
-  #autos { opacity: 0.8; }
-
-  button {
-    font-size: 1.6rem;
-    padding: 20px 50px;
-    border: none;
-    border-radius: 12px;
-    background: #00ff66;
-    cursor: pointer;
-    box-shadow: 0 0 20px #00ff66;
-  }
-
-  .rick {
-    position: absolute;
-    width: 200px;
-    height: 113px;
-    border: none;
-  }
-
-  .shake {
-    animation: shake 0.1s infinite;
-  }
-
-  @keyframes shake {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(5px,5px); }
-    50% { transform: translate(-5px,-5px); }
-    75% { transform: translate(5px,-5px); }
-    100% { transform: translate(0,0); }
-  }
-
-  #crash {
-    position: fixed;
-    inset: 0;
-    background: blue;
-    color: white;
-    font-size: 2rem;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
+body {
+  margin: 0;
+  height: 100vh;
+  background: black;
+  color: #00ff66;
+  font-family: monospace;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+h1 { font-size: 3rem; }
+#score { font-size: 2rem; margin: 10px; }
+#autos { opacity: 0.8; margin-bottom: 10px; }
+button {
+  font-size: 1.6rem;
+  padding: 20px 50px;
+  border: none;
+  border-radius: 12px;
+  background: #00ff66;
+  cursor: pointer;
+  box-shadow: 0 0 20px #00ff66;
+  margin: 5px;
+}
+.rick {
+  position: absolute;
+  width: 200px;
+  height: 113px;
+  border: none;
+}
+.shake { animation: shake 0.1s infinite; }
+@keyframes shake {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(5px,5px); }
+  50% { transform: translate(-5px,-5px); }
+  75% { transform: translate(5px,-5px); }
+  100% { transform: translate(0,0); }
+}
+#crash {
+  position: fixed;
+  inset: 0;
+  background: blue;
+  color: white;
+  font-size: 2rem;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
 </style>
 </head>
-
 <body>
 
-<h1>Rickroll Clicker</h1>
+<h1>Ultimate Rickroll Clicker</h1>
 <div id="score">Klikk: 0</div>
 <div id="autos">Autoklikkere: 0</div>
 
 <button onclick="manualClick()">KLIKK</button>
+<button onclick="location.href='../index.html'">ð  Hjem</button>
 
 <div id="crash">
-  😵 SYSTEM CRASH 😵<br><br>
+  ðµ SYSTEM CRASH ðµ<br><br>
   Just kidding lol
 </div>
 
@@ -84,8 +77,8 @@
 
 <script>
 let clicks = 0;
-let autos = 0;
-let ricks = 0;
+let ricks = [];
+let autoClickers = [];
 
 /* MANUELL KLIKK */
 function manualClick() {
@@ -95,68 +88,79 @@ function manualClick() {
   if (clicks % 50 === 0) spawnRick();
   if (clicks === 67) play67();
   if (clicks === 250) shakeScreen();
-  if (clicks === 450) addFastAuto();
+  if (clicks === 400) addAuto(2);
+  if (clicks === 666) addAuto(3);
+  if (clicks === 777) addAuto(3);
+  if (clicks % 100 === 0 && clicks < 400) addAuto(1);
+  if (clicks === 1000) addAuto(5);
   if (clicks === 500) fakeCrash();
 }
 
 /* UI */
 function update() {
   document.getElementById("score").textContent = "Klikk: " + clicks;
-  document.getElementById("autos").textContent =
-    "Autoklikkere: " + autos;
+  document.getElementById("autos").textContent = "Autoklikkere: " + autoClickers.length;
 }
 
-/* AUTOKLIKKER 2/sec */
-function addFastAuto() {
-  autos++;
-  setInterval(() => {
-    clicks += 2;
-    update();
-  }, 1000); // 2 klikk per sec: 2 clicks per interval
+/* GENERELL AUTOKLIKKER */
+function addAuto(rate) {
+  const interval = setInterval(() => {
+    for (let i=0;i<rate;i++) manualClickNoAuto(); // unngÃ¥ stacking
+  }, 1000);
+  autoClickers.push(interval);
 }
 
-/* RICKROLL VINDU */
+/* MANUAL CLICK Uten Ã¥ trigge nye autoklikkere */
+function manualClickNoAuto() {
+  clicks++;
+  update();
+  if (clicks % 50 === 0) spawnRick();
+  if (clicks === 67) play67();
+  if (clicks === 250) shakeScreen();
+  if (clicks === 500) fakeCrash();
+}
+
+/* RICKROLL */
 function spawnRick() {
-  ricks++;
+  ricks.push(createRick());
+  if (ricks.length % 5 === 0) ricks.push(createRick()); // ekstra Rick hver 5.
+}
 
+/* FUNKSJON FOR Ã LAGE EN RICKROLL */
+function createRick() {
   const iframe = document.createElement("iframe");
-  iframe.src =
-    "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+  iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
   iframe.className = "rick";
-
   iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
   iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
-
   document.body.appendChild(iframe);
-
-  /* ekstra Rick hvert 5. Rickroll */
-  if (ricks % 5 === 0) {
-    const extra = document.createElement("iframe");
-    extra.src =
-      "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-    extra.className = "rick";
-    extra.style.left = "10px";
-    extra.style.top = "10px";
-    document.body.appendChild(extra);
-  }
+  return iframe;
 }
+
+/* FLYKTENDE RICKROLL */
+document.addEventListener("mousemove", e => {
+  ricks.forEach(iframe => {
+    const rect = iframe.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width/2);
+    const dy = e.clientY - (rect.top + rect.height/2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 150) {
+      iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
+      iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
+    }
+  });
+});
 
 /* 67 LYD */
-function play67() {
-  document.getElementById("sound67").play();
-}
+function play67() { document.getElementById("sound67").play(); }
 
 /* SHAKE */
-function shakeScreen() {
-  document.body.classList.add("shake");
-}
+function shakeScreen() { document.body.classList.add("shake"); }
 
 /* FAKE CRASH */
 function fakeCrash() {
   document.getElementById("crash").style.display = "flex";
-  setTimeout(() => {
-    document.getElementById("crash").style.display = "none";
-  }, 4000);
+  setTimeout(() => { document.getElementById("crash").style.display = "none"; }, 4000);
 }
 </script>
 
