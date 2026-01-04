@@ -1,42 +1,158 @@
+
 <!DOCTYPE html>
 <html lang="no">
 <head>
-  <meta charset="UTF-8">
-  <title>TG Games</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      background: #0f0f0f;
-      color: white;
-      font-family: Arial, sans-serif;
-      text-align: center;
-    }
-    .game {
-      background: #1e1e1e;
-      padding: 20px;
-      margin: 20px auto;
-      width: 280px;
-      border-radius: 12px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      cursor: pointer;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Rickroll Clicker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: black;
+    color: #00ff66;
+    font-family: monospace;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  h1 { font-size: 3rem; }
+  #score { font-size: 2rem; margin: 10px; }
+  #autos { opacity: 0.8; }
+
+  button {
+    font-size: 1.6rem;
+    padding: 20px 50px;
+    border: none;
+    border-radius: 12px;
+    background: #00ff66;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00ff66;
+  }
+
+  .rick {
+    position: absolute;
+    width: 200px;
+    height: 113px;
+    border: none;
+  }
+
+  .shake { animation: shake 0.1s infinite; }
+
+  @keyframes shake {
+    0% { transform: translate(0,0); }
+    25% { transform: translate(5px,5px); }
+    50% { transform: translate(-5px,-5px); }
+    75% { transform: translate(5px,-5px); }
+    100% { transform: translate(0,0); }
+  }
+
+  #crash {
+    position: fixed;
+    inset: 0;
+    background: blue;
+    color: white;
+    font-size: 2rem;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+</style>
 </head>
+
 <body>
 
-<h1>🎮 TG Games</h1>
-<p>Spill laget av meg 😎</p>
+<h1>Rickroll Clicker</h1>
+<div id="score">Klikk: 0</div>
+<div id="autos">Autoklikkere: 0</div>
 
-<div class="game">
-  <h2>Rickroll Clicker</h2>
-  <p>Klikk – men ikke stol på lydene 😈</p>
-  <button onclick="location.href='games/clicker.html'">
-    Spill
-  </button>
+<button onclick="manualClick()">KLIKK</button>
+
+<div id="crash">
+  😵 SYSTEM CRASH 😵<br><br>
+  Just kidding lol
 </div>
+
+<audio id="sound67" src="https://www.myinstants.com/media/sounds/bruh.mp3"></audio>
+
+<script>
+let clicks = 0;
+let ricks = 0;
+let autoClickers = [];
+
+/* MANUELL KLIKK */
+function manualClick() {
+  clicks++;
+  update();
+
+  if (clicks % 50 === 0) spawnRick();
+  if (clicks === 67) play67();
+  if (clicks === 250) shakeScreen();
+  if (clicks === 400) addDoubleAuto();
+  if (clicks % 100 === 0) addSingleAuto();
+  if (clicks === 500) fakeCrash();
+}
+
+/* UI */
+function update() {
+  document.getElementById("score").textContent = "Klikk: " + clicks;
+  document.getElementById("autos").textContent = "Autoklikkere: " + autoClickers.length;
+}
+
+/* SINGLE AUTOKLIKKER (1/sec) */
+function addSingleAuto() {
+  const interval = setInterval(() => {
+    clicks++;
+    update();
+  }, 1000);
+  autoClickers.push(interval);
+}
+
+/* DOUBLE AUTOKLIKKER (2/sec) */
+function addDoubleAuto() {
+  const interval = setInterval(() => {
+    clicks += 2;
+    update();
+  }, 1000);
+  autoClickers.push(interval);
+}
+
+/* RICKROLL VINDU */
+function spawnRick() {
+  ricks++;
+  const iframe = document.createElement("iframe");
+  iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+  iframe.className = "rick";
+  iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
+  iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
+  document.body.appendChild(iframe);
+
+  if (ricks % 5 === 0) {
+    const extra = document.createElement("iframe");
+    extra.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+    extra.className = "rick";
+    extra.style.left = "10px";
+    extra.style.top = "10px";
+    document.body.appendChild(extra);
+  }
+}
+
+/* 67 LYD */
+function play67() { document.getElementById("sound67").play(); }
+
+/* SHAKE */
+function shakeScreen() { document.body.classList.add("shake"); }
+
+/* FAKE CRASH */
+function fakeCrash() {
+  document.getElementById("crash").style.display = "flex";
+  setTimeout(() => { document.getElementById("crash").style.display = "none"; }, 4000);
+}
+</script>
 
 </body>
 </html>
