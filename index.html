@@ -6,61 +6,61 @@
 <title>Rickroll Clicker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-  body {
-    margin: 0;
-    height: 100vh;
-    background: black;
-    color: #00ff66;
-    font-family: monospace;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-  }
+body {
+  margin: 0;
+  height: 100vh;
+  background: black;
+  color: #00ff66;
+  font-family: monospace;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
-  h1 { font-size: 3rem; }
-  #score { font-size: 2rem; margin: 10px; }
-  #autos { opacity: 0.8; }
+h1 { font-size: 3rem; }
+#score { font-size: 2rem; margin: 10px; }
+#autos { opacity: 0.8; }
 
-  button {
-    font-size: 1.6rem;
-    padding: 20px 50px;
-    border: none;
-    border-radius: 12px;
-    background: #00ff66;
-    cursor: pointer;
-    box-shadow: 0 0 20px #00ff66;
-  }
+button {
+  font-size: 1.6rem;
+  padding: 20px 50px;
+  border: none;
+  border-radius: 12px;
+  background: #00ff66;
+  cursor: pointer;
+  box-shadow: 0 0 20px #00ff66;
+}
 
-  .rick {
-    position: absolute;
-    width: 200px;
-    height: 113px;
-    border: none;
-  }
+.rick {
+  position: absolute;
+  width: 200px;
+  height: 113px;
+  border: none;
+}
 
-  .shake { animation: shake 0.1s infinite; }
+.shake { animation: shake 0.1s infinite; }
 
-  @keyframes shake {
-    0% { transform: translate(0,0); }
-    25% { transform: translate(5px,5px); }
-    50% { transform: translate(-5px,-5px); }
-    75% { transform: translate(5px,-5px); }
-    100% { transform: translate(0,0); }
-  }
+@keyframes shake {
+  0% { transform: translate(0,0); }
+  25% { transform: translate(5px,5px); }
+  50% { transform: translate(-5px,-5px); }
+  75% { transform: translate(5px,-5px); }
+  100% { transform: translate(0,0); }
+}
 
-  #crash {
-    position: fixed;
-    inset: 0;
-    background: blue;
-    color: white;
-    font-size: 2rem;
-    display: none;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
+#crash {
+  position: fixed;
+  inset: 0;
+  background: blue;
+  color: white;
+  font-size: 2rem;
+  display: none;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
 </style>
 </head>
 
@@ -81,8 +81,9 @@
 
 <script>
 let clicks = 0;
-let ricks = 0;
 let autoClickers = [];
+let ricks = [];
+let autoIntervals = [];
 
 /* MANUELL KLIKK */
 function manualClick() {
@@ -106,8 +107,7 @@ function update() {
 /* SINGLE AUTOKLIKKER (1/sec) */
 function addSingleAuto() {
   const interval = setInterval(() => {
-    clicks++;
-    update();
+    manualClick(); // trigger alt som ved manuelt klikk
   }, 1000);
   autoClickers.push(interval);
 }
@@ -115,31 +115,42 @@ function addSingleAuto() {
 /* DOUBLE AUTOKLIKKER (2/sec) */
 function addDoubleAuto() {
   const interval = setInterval(() => {
-    clicks += 2;
-    update();
+    manualClick();
+    manualClick();
   }, 1000);
   autoClickers.push(interval);
 }
 
 /* RICKROLL VINDU */
 function spawnRick() {
-  ricks++;
+  ricks.push(createRick());
+  if (ricks.length % 5 === 0) ricks.push(createRick()); // ekstra Rick hver 5.
+}
+
+/* FUNKSJON FOR Å LAGE EN RICKROLL */
+function createRick() {
   const iframe = document.createElement("iframe");
   iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
   iframe.className = "rick";
   iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
   iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
   document.body.appendChild(iframe);
-
-  if (ricks % 5 === 0) {
-    const extra = document.createElement("iframe");
-    extra.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-    extra.className = "rick";
-    extra.style.left = "10px";
-    extra.style.top = "10px";
-    document.body.appendChild(extra);
-  }
+  return iframe;
 }
+
+/* FLYKTENDE RICKROLL */
+document.addEventListener("mousemove", e => {
+  ricks.forEach(iframe => {
+    const rect = iframe.getBoundingClientRect();
+    const dx = e.clientX - (rect.left + rect.width/2);
+    const dy = e.clientY - (rect.top + rect.height/2);
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    if (dist < 150) {
+      iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
+      iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
+    }
+  });
+});
 
 /* 67 LYD */
 function play67() { document.getElementById("sound67").play(); }
