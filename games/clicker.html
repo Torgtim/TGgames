@@ -106,16 +106,16 @@ function update() {
     "Autoklikkere: " + autos;
 }
 
-/* AUTOKLIKKER */
+/* AUTOKLIKKER 2/sec */
 function addFastAuto() {
   autos++;
   setInterval(() => {
     clicks += 2;
     update();
-  }, 1000);
+  }, 1000); // 2 klikk per sec: 2 clicks per interval
 }
 
-/* RICKROLL */
+/* RICKROLL VINDU */
 function spawnRick() {
   ricks++;
 
@@ -124,13 +124,12 @@ function spawnRick() {
     "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
   iframe.className = "rick";
 
-  iframe.style.left =
-    Math.random() * (window.innerWidth - 200) + "px";
-  iframe.style.top =
-    Math.random() * (window.innerHeight - 120) + "px";
+  iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
+  iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
 
   document.body.appendChild(iframe);
 
+  /* ekstra Rick hvert 5. Rickroll */
   if (ricks % 5 === 0) {
     const extra = document.createElement("iframe");
     extra.src =
