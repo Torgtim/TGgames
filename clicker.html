@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <title>Rickroll Clicker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      background: black;
+      color: #00ff66;
+      font-family: monospace;
+      text-align: center;
+      margin-top: 20vh;
+    }
+    button {
+      font-size: 1.5rem;
+      padding: 20px 40px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Rickroll Clicker</h1>
+<p>Klikk for poeng…</p>
+
+<button onclick="clickMe()">KLIKK MEG</button>
+
+<p>Poeng: <span id="score">0</span></p>
+
+<audio id="rick" src="https://www.myinstants.com/media/sounds/rickroll.mp3"></audio>
+
+<script>
+let score = 0;
+function clickMe() {
+  score++;
+  document.getElementById("score").textContent = score;
+
+  if (score % 5 === 0) {
+    document.getElementById("rick").play();
+  }
+}
+</script>
+
+</body>
+</html>
