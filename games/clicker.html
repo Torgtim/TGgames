@@ -2,89 +2,116 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-  <meta charset="UTF-8">
-  <title>Rickroll Clicker</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    body {
-      background: radial-gradient(circle at top, #111, #000);
-      color: #00ff66;
-      font-family: monospace;
-      text-align: center;
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-    }
+<meta charset="UTF-8">
+<title>Rickroll Clicker</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    h1 {
-      font-size: 3rem;
-      margin-bottom: 10px;
-    }
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    background: radial-gradient(circle at top, #111, #000);
+    color: #00ff66;
+    font-family: monospace;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
 
-    #score {
-      font-size: 2rem;
-      margin: 15px 0;
-    }
+  h1 { font-size: 3rem; margin: 10px; }
 
-    button {
-      font-size: 1.6rem;
-      padding: 20px 50px;
-      border: none;
-      border-radius: 12px;
-      background: #00ff66;
-      cursor: pointer;
-      transition: transform 0.1s, box-shadow 0.1s;
-      box-shadow: 0 0 20px #00ff66;
-    }
+  #score { font-size: 2rem; margin: 10px; }
 
-    button:active {
-      transform: scale(0.95);
-      box-shadow: 0 0 40px #00ff66;
-    }
+  #autos { opacity: 0.8; }
 
-    .hint {
-      opacity: 0.6;
-      margin-top: 20px;
-      font-size: 0.9rem;
-    }
+  button {
+    font-size: 1.6rem;
+    padding: 20px 50px;
+    border: none;
+    border-radius: 12px;
+    background: #00ff66;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00ff66;
+  }
 
-    iframe {
-      display: none;
-    }
-  </style>
+  button:active { transform: scale(0.95); }
+
+  .rick {
+    position: absolute;
+    width: 200px;
+    pointer-events: none;
+  }
+</style>
 </head>
+
 <body>
 
 <h1>Rickroll Clicker</h1>
-<div id="score">Poeng: 0</div>
+<div id="score">Klikk: 0</div>
+<div id="autos">Autoklikkere: 0</div>
 
-<button onclick="clickMe()">KLIKK MEG</button>
-
-<p class="hint">Hver 5. klikk… noe skjer 😈</p>
-
-<!-- Skjult Rickroll -->
-<iframe
-  id="rick"
-  width="0"
-  height="0"
-  src=""
-  allow="autoplay">
-</iframe>
+<button onclick="manualClick()">KLIKK</button>
 
 <script>
-let score = 0;
+let clicks = 0;
+let autos = 0;
 
-function clickMe() {
-  score++;
-  document.getElementById("score").textContent = "Poeng: " + score;
+/* MANUELL KLIKK */
+function manualClick() {
+  clicks++;
+  update();
 
-  if (score % 5 === 0) {
-    document.getElementById("rick").src =
-      "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-  }
+  if (clicks % 50 === 0) spawnFlyingRick();
+  if (clicks % 100 === 0) addAutoClicker();
+}
+
+/* OPPDATER TEKST */
+function update() {
+  document.getElementById("score").textContent = "Klikk: " + clicks;
+  document.getElementById("autos").textContent =
+    "Autoklikkere: " + autos;
+}
+
+/* AUTOKLIKKER */
+function addAutoClicker() {
+  autos++;
+  setInterval(() => {
+    clicks++;
+    update();
+  }, 1000);
+}
+
+/* FLYKTENDE RICKROLL */
+function spawnFlyingRick() {
+  const iframe = document.createElement("iframe");
+  iframe.src =
+    "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
+  iframe.className = "rick";
+
+  document.body.appendChild(iframe);
+
+  let x = Math.random() * (window.innerWidth - 200);
+  let y = Math.random() * (window.innerHeight - 120);
+
+  iframe.style.left = x + "px";
+  iframe.style.top = y + "px";
+
+  document.addEventListener("mousemove", e => {
+    const dx = e.clientX - x;
+    const dy = e.clientY - y;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+
+    if (dist < 150) {
+      x = Math.random() * (window.innerWidth - 200);
+      y = Math.random() * (window.innerHeight - 120);
+      iframe.style.left = x + "px";
+      iframe.style.top = y + "px";
+    }
+  });
+
+  setTimeout(() => iframe.remove(), 15000);
 }
 </script>
 
