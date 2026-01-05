@@ -88,12 +88,12 @@ let gameInterval;
 let obstacleInterval;
 let jumping = false;
 let jumpSpeed = 0;
-const gravity = 2; // lavere gir lengre hopp
+const gravity = 2; // lav gravity = lengre hopp
 const playerWidth = 40;
 const playerHeight = 40;
 
+// Start spillet
 function startGame() {
-  // Reset
   score = 0;
   scoreDisplay.textContent = 'Poeng: ' + score;
   gameOverDisplay.style.display = 'none';
@@ -106,13 +106,11 @@ function startGame() {
   clearInterval(gameInterval);
   clearInterval(obstacleInterval);
 
-  // Start game loop
   gameInterval = setInterval(gameLoop, 20);
-
-  // Lag hindringer jevnlig
-  obstacleInterval = setInterval(createObstacle, 1500);
+  obstacleInterval = setInterval(createObstacle, 1500); // ny hindring hvert 1,5 sekund
 }
 
+// Hovedspill-løkke
 function gameLoop() {
   // Hopp
   if (jumping) {
@@ -133,23 +131,22 @@ function gameLoop() {
     left -= obs.speed;
     obs.style.left = left + 'px';
 
-    // Kollisjon med spiller
+    // Kollisjonssjekk
     let obsLeft = left;
-    let obsRight = left + obs.offsetWidth;
-    let obsTop = obs.offsetHeight;
+    let obsRight = obsLeft + parseInt(obs.style.width);
+    let obsTop = parseInt(obs.style.height);
 
     let playerLeft = parseInt(player.style.left);
     let playerRight = playerLeft + playerWidth;
     let playerBottom = parseInt(player.style.bottom);
     let playerTop = playerBottom + playerHeight;
 
-    if (obsRight > playerLeft && obsLeft < playerRight &&
-        playerBottom < obsTop) {
-      gameOver(); // **Kun her trigger Game Over**
+    if (playerRight > obsLeft && playerLeft < obsRight && playerBottom < obsTop) {
+      gameOver(); // **Game Over kun ved kollisjon**
     }
 
     // Fjern hindring når den går ut av skjermen – ingen Game Over
-    if (left + obs.offsetWidth < 0) {
+    if (left + parseInt(obs.style.width) < 0) {
       obs.remove();
       obstacles.splice(index, 1);
       score++;
@@ -158,18 +155,19 @@ function gameLoop() {
   });
 }
 
+// Lag hindring
 function createObstacle() {
   const obs = document.createElement('div');
   obs.classList.add('obstacle');
-  // Random størrelse
   obs.style.width = (20 + Math.floor(Math.random() * 30)) + 'px';
   obs.style.height = (20 + Math.floor(Math.random() * 60)) + 'px';
   obs.style.left = gameBox.clientWidth + 'px';
-  obs.speed = 5 + Math.random() * 3; // litt variasjon i fart
+  obs.speed = 5 + Math.random() * 3;
   gameBox.appendChild(obs);
   obstacles.push(obs);
 }
 
+// Game Over
 function gameOver() {
   clearInterval(gameInterval);
   clearInterval(obstacleInterval);
@@ -180,6 +178,7 @@ function gameOver() {
   }
 }
 
+// Hopp med mellomrom
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Space' && !jumping) {
     jumping = true;
@@ -187,6 +186,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+// Restart-knapp
 restartBtn.addEventListener('click', startGame);
 
 // Start automatisk
