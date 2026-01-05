@@ -3,56 +3,111 @@
 <html lang="no">
 <head>
   <meta charset="UTF-8">
-  <title>TGgames</title>
+  <title>🎮 TG Games</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
+    /* --- BAKGRUNN OG FONT --- */
     body {
-      background: black;
-      color: lime;
-      font-family: monospace;
-      text-align: center;
       margin: 0;
-      padding-top: 100px;
+      padding: 0;
+      background: linear-gradient(135deg, #0f0f0f, #111111);
+      color: white;
+      font-family: 'Courier New', Courier, monospace;
+      text-align: center;
     }
 
     h1 {
-      font-size: 72px;
-      letter-spacing: 6px;
-      margin-bottom: 60px;
+      font-size: 3rem;
+      margin-top: 50px;
+      letter-spacing: 4px;
+      color: #00ff88;
+      text-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88;
     }
 
+    p.subtitle {
+      font-size: 1.2rem;
+      margin-bottom: 40px;
+      color: #cccccc;
+    }
+
+    /* --- SPILLKORT --- */
     .game {
-      display: inline-block;
-      padding: 22px 44px;
-      border: 3px solid lime;
-      font-size: 26px;
-      cursor: pointer;
-      transition: 0.2s;
+      background: #1e1e1e;
+      padding: 25px;
+      margin: 20px auto;
+      width: 300px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px #00ff88, 0 0 30px #00ff88 inset;
+      transition: transform 0.2s, box-shadow 0.2s;
     }
 
     .game:hover {
-      background: lime;
-      color: black;
-      transform: scale(1.1);
+      transform: scale(1.05);
+      box-shadow: 0 0 25px #00ff88, 0 0 50px #00ff88 inset;
     }
 
-    .small {
-      margin-top: 50px;
-      font-size: 14px;
-      opacity: 0.7;
+    .game h2 {
+      margin-top: 0;
+      color: #00ff88;
+      text-shadow: 0 0 8px #00ff88;
     }
+
+    .game p {
+      font-size: 0.95rem;
+      color: #cccccc;
+    }
+
+    /* --- KNAPPER --- */
+    button {
+      padding: 12px 28px;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 10px;
+      background: #00ff88;
+      color: black;
+      font-weight: bold;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    button:hover {
+      background: #00cc6f;
+      transform: scale(1.05);
+    }
+
+    /* --- FOOTER / ADVARSEL --- */
+    .warning {
+      font-size: 0.85rem;
+      color: #ff5555;
+      margin-top: 50px;
+      opacity: 0.8;
+    }
+
   </style>
 </head>
 <body>
 
-  <h1>TGgames</h1>
+  <!-- --- LOGO / TITEL --- -->
+  <h1>🎮 TG Games</h1>
+  <p class="subtitle">Spill laget av meg 😎 – klikk på spillene under</p>
 
-  <div class="game" onclick="location.href='games/clicker.html'">
-    😈 Rick Roll Clicker
+  <!-- --- SPILLKORT --- -->
+  <div class="game">
+    <h2>Rickroll Clicker</h2>
+    <p>Hvor mye lyd holder du ut? 😈</p>
+    <button onclick="location.href='games/clicker.html'">Spill</button>
   </div>
 
-  <div class="small">
-    ⚠️ Noen spill kan være farlige for nettleseren
+  <!-- Flere spill kan legges til her -->
+  <!--
+  <div class="game">
+    <h2>Nytt Spill</h2>
+    <p>Beskrivelse</p>
+    <button onclick="location.href='games/nyttspill.html'">Spill</button>
   </div>
+  -->
+
+  <p class="warning">⚠️ Noen spill kan være farlige for nettleseren</p>
 
 </body>
 </html>
