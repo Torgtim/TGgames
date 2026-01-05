@@ -2,168 +2,65 @@
 <!DOCTYPE html>
 <html lang="no">
 <head>
-<meta charset="UTF-8">
-<title>Rickroll Clicker</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-body {
-  margin: 0;
-  height: 100vh;
-  background: black;
-  color: #00ff66;
-  font-family: monospace;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
+  <meta charset="UTF-8">
+  <title>Velg spill</title>
+  <style>
+    body {
+      background: black;
+      color: lime;
+      font-family: monospace;
+      text-align: center;
+      padding-top: 60px;
+    }
 
-h1 { font-size: 3rem; }
-#score { font-size: 2rem; margin: 10px; }
-#autos { opacity: 0.8; }
+    h1 {
+      margin-bottom: 40px;
+    }
 
-button {
-  font-size: 1.6rem;
-  padding: 20px 50px;
-  border: none;
-  border-radius: 12px;
-  background: #00ff66;
-  cursor: pointer;
-  box-shadow: 0 0 20px #00ff66;
-}
+    .game {
+      display: inline-block;
+      margin: 20px;
+      padding: 20px 30px;
+      border: 2px solid lime;
+      cursor: pointer;
+      font-size: 20px;
+      transition: 0.2s;
+    }
 
-.rick {
-  position: absolute;
-  width: 200px;
-  height: 113px;
-  border: none;
-}
+    .game:hover {
+      background: lime;
+      color: black;
+      transform: scale(1.05);
+    }
 
-.shake { animation: shake 0.1s infinite; }
-
-@keyframes shake {
-  0% { transform: translate(0,0); }
-  25% { transform: translate(5px,5px); }
-  50% { transform: translate(-5px,-5px); }
-  75% { transform: translate(5px,-5px); }
-  100% { transform: translate(0,0); }
-}
-
-#crash {
-  position: fixed;
-  inset: 0;
-  background: blue;
-  color: white;
-  font-size: 2rem;
-  display: none;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-</style>
+    .warning {
+      margin-top: 50px;
+      color: red;
+      font-size: 14px;
+      opacity: 0.8;
+    }
+  </style>
 </head>
-
 <body>
 
-<h1>Rickroll Clicker</h1>
-<div id="score">Klikk: 0</div>
-<div id="autos">Autoklikkere: 0</div>
+  <h1>🎮 VELG SPILL</h1>
 
-<button onclick="manualClick()">KLIKK</button>
+  <div class="game" onclick="location.href='rickclicker.html'">
+    😈 Rick Roll Clicker  
+    <br>
+    <small>(kan ødelegge nettleseren)</small>
+  </div>
 
-<div id="crash">
-  😵 SYSTEM CRASH 😵<br><br>
-  Just kidding lol
-</div>
+  <!-- Klar for flere spill senere -->
+  <!--
+  <div class="game" onclick="location.href='spill2.html'">
+    ??? Ukjent spill
+  </div>
+  -->
 
-<audio id="sound67" src="https://www.myinstants.com/media/sounds/bruh.mp3"></audio>
-
-<script>
-let clicks = 0;
-let autoClickers = [];
-let ricks = [];
-let autoIntervals = [];
-
-/* MANUELL KLIKK */
-function manualClick() {
-  clicks++;
-  update();
-
-  if (clicks % 50 === 0) spawnRick();
-  if (clicks === 67) play67();
-  if (clicks === 250) shakeScreen();
-  if (clicks === 400) addDoubleAuto();
-  if (clicks % 100 === 0) addSingleAuto();
-  if (clicks === 500) fakeCrash();
-}
-
-/* UI */
-function update() {
-  document.getElementById("score").textContent = "Klikk: " + clicks;
-  document.getElementById("autos").textContent = "Autoklikkere: " + autoClickers.length;
-}
-
-/* SINGLE AUTOKLIKKER (1/sec) */
-function addSingleAuto() {
-  const interval = setInterval(() => {
-    manualClick(); // trigger alt som ved manuelt klikk
-  }, 1000);
-  autoClickers.push(interval);
-}
-
-/* DOUBLE AUTOKLIKKER (2/sec) */
-function addDoubleAuto() {
-  const interval = setInterval(() => {
-    manualClick();
-    manualClick();
-  }, 1000);
-  autoClickers.push(interval);
-}
-
-/* RICKROLL VINDU */
-function spawnRick() {
-  ricks.push(createRick());
-  if (ricks.length % 5 === 0) ricks.push(createRick()); // ekstra Rick hver 5.
-}
-
-/* FUNKSJON FOR Å LAGE EN RICKROLL */
-function createRick() {
-  const iframe = document.createElement("iframe");
-  iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-  iframe.className = "rick";
-  iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
-  iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
-  document.body.appendChild(iframe);
-  return iframe;
-}
-
-/* FLYKTENDE RICKROLL */
-document.addEventListener("mousemove", e => {
-  ricks.forEach(iframe => {
-    const rect = iframe.getBoundingClientRect();
-    const dx = e.clientX - (rect.left + rect.width/2);
-    const dy = e.clientY - (rect.top + rect.height/2);
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if (dist < 150) {
-      iframe.style.left = Math.random() * (window.innerWidth - 200) + "px";
-      iframe.style.top = Math.random() * (window.innerHeight - 113) + "px";
-    }
-  });
-});
-
-/* 67 LYD */
-function play67() { document.getElementById("sound67").play(); }
-
-/* SHAKE */
-function shakeScreen() { document.body.classList.add("shake"); }
-
-/* FAKE CRASH */
-function fakeCrash() {
-  document.getElementById("crash").style.display = "flex";
-  setTimeout(() => { document.getElementById("crash").style.display = "none"; }, 4000);
-}
-</script>
+  <div class="warning">
+    ⚠️ Spill kan inneholde høy lyd, kaos og Rick Astley
+  </div>
 
 </body>
 </html>
