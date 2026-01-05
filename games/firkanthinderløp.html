@@ -1,3 +1,117 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Hinderløp – Evig</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  body {
+    background: #0f0f0f;
+    color: white;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    user-select: none;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+  }
+
+  #gameBox {
+    width: 500px;
+    height: 200px;
+    margin: 20px auto;
+    background: #222;
+    position: relative;
+    overflow: hidden;
+    border: 2px solid #fff;
+  }
+
+  #player {
+    width: 40px;
+    height: 40px;
+    background: #0ff;
+    position: absolute;
+    bottom: 0;
+    left: 50px;
+  }
+
+  .obstacle {
+    position: absolute;
+    bottom: 0;
+    background: #f00;
+  }
+
+  #score, #highScore {
+    margin: 10px;
+    font-size: 18px;
+  }
+
+  #gameOver {
+    font-size: 24px;
+    color: #f00;
+    display: none;
+  }
+
+  button {
+    margin-top: 10px;
+    padding: 8px 12px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<h1>Hinderløp – Evig!</h1>
+<div id="score">Poeng: 0</div>
+<div id="highScore">High Score: 0</div>
+<div id="gameBox">
+  <div id="player"></div>
+</div>
+<div id="gameOver">Game Over!</div>
+<button id="restartBtn">Spill igjen</button>
+
+<script>
+const player = document.getElementById('player');
+const gameBox = document.getElementById('gameBox');
+const scoreDisplay = document.getElementById('score');
+const highScoreDisplay = document.getElementById('highScore');
+const gameOverDisplay = document.getElementById('gameOver');
+const restartBtn = document.getElementById('restartBtn');
+
+let score = 0;
+let highScore = 0;
+let obstacles = [];
+let gameInterval;
+let obstacleInterval;
+let jumping = false;
+let jumpSpeed = 0;
+const gravity = 2; // lavere gir lengre hopp
+const playerWidth = 40;
+const playerHeight = 40;
+
+function startGame() {
+  // Reset
+  score = 0;
+  scoreDisplay.textContent = 'Poeng: ' + score;
+  gameOverDisplay.style.display = 'none';
+  obstacles.forEach(obs => obs.remove());
+  obstacles = [];
+  player.style.bottom = '0px';
+  jumping = false;
+  jumpSpeed = 0;
+
+  clearInterval(gameInterval);
+  clearInterval(obstacleInterval);
+
+  // Start game loop
+  gameInterval = setInterval(gameLoop, 20);
+
+  // Lag hindringer jevnlig
+  obstacleInterval = setInterval(createObstacle, 1500);
+}
 
 function gameLoop() {
   // Hopp
@@ -19,7 +133,7 @@ function gameLoop() {
     left -= obs.speed;
     obs.style.left = left + 'px';
 
-    // Kollisjon
+    // Kollisjon med spiller
     let obsLeft = left;
     let obsRight = left + obs.offsetWidth;
     let obsTop = obs.offsetHeight;
@@ -31,10 +145,10 @@ function gameLoop() {
 
     if (obsRight > playerLeft && obsLeft < playerRight &&
         playerBottom < obsTop) {
-      gameOver(); // **kun her trigger Game Over**
+      gameOver(); // **Kun her trigger Game Over**
     }
 
-    // Fjern hindring hvis den går ut av skjermen – **ingen Game Over her**
+    // Fjern hindring når den går ut av skjermen – ingen Game Over
     if (left + obs.offsetWidth < 0) {
       obs.remove();
       obstacles.splice(index, 1);
@@ -43,3 +157,40 @@ function gameLoop() {
     }
   });
 }
+
+function createObstacle() {
+  const obs = document.createElement('div');
+  obs.classList.add('obstacle');
+  // Random størrelse
+  obs.style.width = (20 + Math.floor(Math.random() * 30)) + 'px';
+  obs.style.height = (20 + Math.floor(Math.random() * 60)) + 'px';
+  obs.style.left = gameBox.clientWidth + 'px';
+  obs.speed = 5 + Math.random() * 3; // litt variasjon i fart
+  gameBox.appendChild(obs);
+  obstacles.push(obs);
+}
+
+function gameOver() {
+  clearInterval(gameInterval);
+  clearInterval(obstacleInterval);
+  gameOverDisplay.style.display = 'block';
+  if (score > highScore) {
+    highScore = score;
+    highScoreDisplay.textContent = 'High Score: ' + highScore;
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space' && !jumping) {
+    jumping = true;
+    jumpSpeed = 25; // høyere hopp
+  }
+});
+
+restartBtn.addEventListener('click', startGame);
+
+// Start automatisk
+startGame();
+</script>
+</body>
+</html>
