@@ -1,10 +1,48 @@
+
 <!DOCTYPE html>
-<html>
+<html lang="no">
+<head>
+  <meta charset="UTF-8">
+  <title>TGgames</title>
+  <style>
+    body {
+      background: black;
+      color: lime;
+      font-family: monospace;
+      text-align: center;
+      margin: 0;
+      padding-top: 80px;
+    }
+
+    h1 {
+      font-size: 64px;
+      margin-bottom: 50px;
+      letter-spacing: 4px;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 20px 40px;
+      border: 3px solid lime;
+      font-size: 24px;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: lime;
+      color: black;
+      transform: scale(1.1);
+    }
+  </style>
+</head>
 <body>
 
-<button onclick="window.location.href='games/index.html'">
-  Spill
-</button>
+  <h1>TGgames</h1>
+
+  <div class="btn" onclick="location.href='clicker.html'">
+    😈 Rick Roll Clicker
+  </div>
 
 </body>
 </html>
