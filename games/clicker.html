@@ -1,10 +1,9 @@
 
-
 <!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Ultimate Rickroll Clicker</title>
+<title>Rickroll Clicker</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
@@ -19,9 +18,11 @@ body {
   justify-content: center;
   align-items: center;
 }
+
 h1 { font-size: 3rem; }
 #score { font-size: 2rem; margin: 10px; }
-#autos { opacity: 0.8; margin-bottom: 10px; }
+#autos { opacity: 0.8; }
+
 button {
   font-size: 1.6rem;
   padding: 20px 50px;
@@ -30,15 +31,17 @@ button {
   background: #00ff66;
   cursor: pointer;
   box-shadow: 0 0 20px #00ff66;
-  margin: 5px;
 }
+
 .rick {
   position: absolute;
   width: 200px;
   height: 113px;
   border: none;
 }
+
 .shake { animation: shake 0.1s infinite; }
+
 @keyframes shake {
   0% { transform: translate(0,0); }
   25% { transform: translate(5px,5px); }
@@ -46,6 +49,7 @@ button {
   75% { transform: translate(5px,-5px); }
   100% { transform: translate(0,0); }
 }
+
 #crash {
   position: fixed;
   inset: 0;
@@ -59,17 +63,17 @@ button {
 }
 </style>
 </head>
+
 <body>
 
-<h1>Ultimate Rickroll Clicker</h1>
+<h1>Rickroll Clicker</h1>
 <div id="score">Klikk: 0</div>
 <div id="autos">Autoklikkere: 0</div>
 
 <button onclick="manualClick()">KLIKK</button>
-<button onclick="location.href='../index.html'">ð  Hjem</button>
 
 <div id="crash">
-  ðµ SYSTEM CRASH ðµ<br><br>
+  😵 SYSTEM CRASH 😵<br><br>
   Just kidding lol
 </div>
 
@@ -77,8 +81,9 @@ button {
 
 <script>
 let clicks = 0;
-let ricks = [];
 let autoClickers = [];
+let ricks = [];
+let autoIntervals = [];
 
 /* MANUELL KLIKK */
 function manualClick() {
@@ -88,11 +93,8 @@ function manualClick() {
   if (clicks % 50 === 0) spawnRick();
   if (clicks === 67) play67();
   if (clicks === 250) shakeScreen();
-  if (clicks === 400) addAuto(2);
-  if (clicks === 666) addAuto(3);
-  if (clicks === 777) addAuto(3);
-  if (clicks % 100 === 0 && clicks < 400) addAuto(1);
-  if (clicks === 1000) addAuto(5);
+  if (clicks === 400) addDoubleAuto();
+  if (clicks % 100 === 0) addSingleAuto();
   if (clicks === 500) fakeCrash();
 }
 
@@ -102,31 +104,30 @@ function update() {
   document.getElementById("autos").textContent = "Autoklikkere: " + autoClickers.length;
 }
 
-/* GENERELL AUTOKLIKKER */
-function addAuto(rate) {
+/* SINGLE AUTOKLIKKER (1/sec) */
+function addSingleAuto() {
   const interval = setInterval(() => {
-    for (let i=0;i<rate;i++) manualClickNoAuto(); // unngÃ¥ stacking
+    manualClick(); // trigger alt som ved manuelt klikk
   }, 1000);
   autoClickers.push(interval);
 }
 
-/* MANUAL CLICK Uten Ã¥ trigge nye autoklikkere */
-function manualClickNoAuto() {
-  clicks++;
-  update();
-  if (clicks % 50 === 0) spawnRick();
-  if (clicks === 67) play67();
-  if (clicks === 250) shakeScreen();
-  if (clicks === 500) fakeCrash();
+/* DOUBLE AUTOKLIKKER (2/sec) */
+function addDoubleAuto() {
+  const interval = setInterval(() => {
+    manualClick();
+    manualClick();
+  }, 1000);
+  autoClickers.push(interval);
 }
 
-/* RICKROLL */
+/* RICKROLL VINDU */
 function spawnRick() {
   ricks.push(createRick());
   if (ricks.length % 5 === 0) ricks.push(createRick()); // ekstra Rick hver 5.
 }
 
-/* FUNKSJON FOR Ã LAGE EN RICKROLL */
+/* FUNKSJON FOR Å LAGE EN RICKROLL */
 function createRick() {
   const iframe = document.createElement("iframe");
   iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
