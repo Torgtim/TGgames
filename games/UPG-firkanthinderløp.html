@@ -255,11 +255,17 @@ function endGame(){
   gameRunning=false;
   gameOverEl.style.display="block";
 }
-</script>
-  document.addEventListener("keydown", e => {
-  if (e.code === "Space") {
+
+<!-- START AV SCRIPT -->
+<script>
+// Denne koden forhindrer at Space trykker på knappen
+document.addEventListener("keydown", e => {
+  if(e.code === "Space") {
     e.preventDefault();
   }
 });
+</script>
+<!-- END AV SCRIPT -->
+  
 </body>
 </html>
