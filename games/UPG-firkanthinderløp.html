@@ -10,7 +10,6 @@ body{
   background:#0f0f0f;
   color:white;
   font-family:Arial;
-  text-align:center;
   margin:0;
   padding:20px;
 }
@@ -33,14 +32,40 @@ body{
 }
 .obstacle{position:absolute;background:red}
 .powerup{position:absolute;width:24px;height:24px;background:yellow}
-#ui{font-size:14px}
-#gameOver{font-size:26px;color:red;display:none}
-button{padding:8px 14px;font-size:16px}
+
+#ui{font-size:14px;text-align:center}
+#gameOver{font-size:26px;color:red;display:none;text-align:center}
+
+#controls{
+  position:absolute;
+  left:10px;
+  top:10px;
+  font-size:13px;
+  text-align:left;
+  line-height:1.4;
+  opacity:0.85;
+}
+
+button{
+  padding:8px 14px;
+  font-size:16px;
+  display:block;
+  margin:10px auto;
+}
 </style>
 </head>
 
 <body>
-<h1>Firkanthinderløp – UPGRADED</h1>
+<h1 style="text-align:center">Firkanthinderløp – UPGRADED</h1>
+
+<div id="controls">
+<b>KONTROLLER</b><br>
+⎵ Space – Hopp / Dobbelhopp<br>
+X – Dash<br>
+C – Magnet flip<br>
+V – Teleport
+</div>
+
 <div id="ui"></div>
 
 <div id="gameBox">
@@ -79,37 +104,48 @@ function startGame(){
   powerups.forEach(p=>p.remove());
   obstacles=[]; powerups=[];
   score=0;
-  yVel=0; jumpCount=0;
+  yVel=0;
+  jumpCount=0;
   shield=jumpBoost=magnet=0;
   teleport=0;
-  dashCooldown=0; dashFrames=0;
+  dashCooldown=0;
+  dashFrames=0;
   player.style.left="60px";
   player.style.bottom="0px";
   gameOverEl.style.display="none";
   gameRunning=true;
 }
+
 startGame();
 
 function loop(){
+  requestAnimationFrame(loop);
+
   if(!gameRunning) return;
 
   // Gravity
   yVel+=gravity;
   let bottom=parseInt(player.style.bottom)-yVel;
-  if(bottom<=0){bottom=0;yVel=0;jumpCount=0}
-  if(bottom>=gameBox.offsetHeight-40){bottom=gameBox.offsetHeight-40;yVel=0}
+
+  if(bottom<=0){
+    bottom=0;
+    yVel=0;
+    jumpCount=0;
+  }
+  if(bottom>=gameBox.offsetHeight-40){
+    bottom=gameBox.offsetHeight-40;
+    yVel=0;
+  }
   player.style.bottom=bottom+"px";
 
-  // Dash move
+  // Dash
   if(dashFrames>0){
-    player.style.left = Math.min(
-      parseInt(player.style.left)+12,
-      gameBox.offsetWidth-40
-    )+"px";
+    player.style.left =
+      Math.min(parseInt(player.style.left)+12, gameBox.offsetWidth-40)+"px";
     dashFrames--;
   }
 
-  // Cooldowns
+  // Timers
   if(shield>0) shield-=1/60;
   if(jumpBoost>0) jumpBoost-=1/60;
   if(magnet>0) magnet-=1/60;
@@ -142,14 +178,14 @@ function loop(){
 
   ui.innerHTML=`
 Poeng: ${score}<br>
-Shield: ${Math.max(0,shield|0)}s<br>
-JumpBoost: ${Math.max(0,jumpBoost|0)}s<br>
+Shield: ${Math.max(0,shield|0)}s |
+JumpBoost: ${Math.max(0,jumpBoost|0)}s |
 Magnet: ${Math.max(0,magnet|0)}s<br>
-Dash: ${dashCooldown<=0?"klar":(dashCooldown|0)+"s"}<br>
+Dash: ${dashCooldown<=0?"klar":(dashCooldown|0)+"s"} |
 Teleport: ${teleport}
   `;
-  requestAnimationFrame(loop);
 }
+
 loop();
 
 function collide(a,b){
@@ -178,8 +214,9 @@ document.addEventListener("keydown",e=>{
   }
 });
 
+// Obstacles
 setInterval(()=>{
-  if(obstacles.length>4 || !gameRunning) return;
+  if(!gameRunning || obstacles.length>4) return;
   const o=document.createElement("div");
   o.className="obstacle";
   o.style.width=60+Math.random()*60+"px";
@@ -192,6 +229,7 @@ setInterval(()=>{
   obstacles.push(o);
 },1500);
 
+// Powerups
 setInterval(()=>{
   if(!gameRunning) return;
   if(obstacles.some(o=>o.x>gameBox.offsetWidth-120)) return;
