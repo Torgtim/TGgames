@@ -1,0 +1,236 @@
+
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>Firkanthinderløp – UPGRADED</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body {
+  background:#0f0f0f;
+  color:white;
+  font-family:Arial;
+  text-align:center;
+  margin:0;
+  padding:20px;
+  user-select:none;
+}
+
+#gameBox {
+  width:560px;
+  height:260px;
+  background:#222;
+  margin:20px auto;
+  border:2px solid white;
+  position:relative;
+  overflow:hidden;
+}
+
+#player {
+  width:40px;
+  height:40px;
+  background:#00ffff;
+  position:absolute;
+  left:60px;
+  bottom:0;
+}
+
+.obstacle {
+  position:absolute;
+  background:red;
+}
+
+.powerup {
+  position:absolute;
+  width:25px;
+  height:25px;
+  background:yellow;
+  bottom:0;
+}
+
+#ui {
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+<h1>Firkanthinderløp – UPGRADED</h1>
+<div id="ui">Poeng: 0</div>
+
+<div id="gameBox">
+  <div id="player"></div>
+</div>
+
+<script>
+const player = document.getElementById("player");
+const gameBox = document.getElementById("gameBox");
+const ui = document.getElementById("ui");
+
+let score = 0;
+let obstacles = [];
+let powerups = [];
+
+let yVel = 0;
+let gravity = 2;
+let jumpPower = 25;
+let jumpCount = 0;
+let maxJumps = 2;
+
+let dashActive = false;
+let dashTime = 0;
+
+let flip = false;
+
+// Powerups
+let shield = false;
+let jumpBoost = false;
+let magnet = false;
+let teleportReady = false;
+
+function loop() {
+  // Gravity
+  yVel -= gravity;
+  let bottom = parseInt(player.style.bottom);
+  bottom += yVel;
+
+  if (!flip && bottom <= 0) {
+    bottom = 0;
+    yVel = 0;
+    jumpCount = 0;
+  }
+
+  if (flip && bottom >= gameBox.offsetHeight - 40) {
+    bottom = gameBox.offsetHeight - 40;
+    yVel = 0;
+    jumpCount = 0;
+  }
+
+  player.style.bottom = bottom + "px";
+
+  // Move obstacles
+  obstacles.forEach((o,i)=>{
+    o.x -= o.speed;
+    o.style.left = o.x + "px";
+
+    if (collision(player, o) && !shield) {
+      alert("GAME OVER");
+      location.reload();
+    }
+
+    if (o.x + o.offsetWidth < 0) {
+      o.remove();
+      obstacles.splice(i,1);
+      score++;
+    }
+  });
+
+  // Powerups
+  powerups.forEach((p,i)=>{
+    p.x -= 4;
+    p.style.left = p.x + "px";
+
+    if (collision(player, p)) {
+      activatePower();
+      p.remove();
+      powerups.splice(i,1);
+    }
+  });
+
+  ui.innerHTML = `
+  Poeng: ${score}<br>
+  Shield: ${shield}<br>
+  JumpBoost: ${jumpBoost}<br>
+  Magnet: ${magnet}<br>
+  Teleport: ${teleportReady}
+  `;
+
+  requestAnimationFrame(loop);
+}
+
+function collision(a,b) {
+  const r1 = a.getBoundingClientRect();
+  const r2 = b.getBoundingClientRect();
+  return (
+    r1.right > r2.left &&
+    r1.left < r2.right &&
+    r1.bottom > r2.top &&
+    r1.top < r2.bottom
+  );
+}
+
+// Controls
+document.addEventListener("keydown", e=>{
+  if (e.code==="Space" && jumpCount < maxJumps) {
+    yVel = jumpBoost ? 32 : jumpPower;
+    jumpCount++;
+  }
+
+  if (e.code==="KeyX" && !dashActive) {
+    dashActive = true;
+    dashTime = 15;
+  }
+
+  if (e.code==="KeyC" && magnet) {
+    flip = !flip;
+    yVel = 0;
+  }
+
+  if (e.code==="KeyV" && teleportReady) {
+    player.style.bottom = Math.random()*150+"px";
+    teleportReady = false;
+  }
+});
+
+// Dash
+setInterval(()=>{
+  if (dashActive) {
+    obstacles.forEach(o=>o.x -= 15);
+    dashTime--;
+    if (dashTime<=0) dashActive=false;
+  }
+},20);
+
+// Obstacles
+setInterval(()=>{
+  const o = document.createElement("div");
+  o.className="obstacle";
+  o.style.width = 40 + Math.random()*60 + "px";
+  o.style.height = 40 + Math.random()*100 + "px";
+  o.style.bottom = Math.random()<0.3 ? "120px":"0px";
+  o.x = gameBox.offsetWidth;
+  o.speed = 5 + Math.random()*3;
+  o.style.left = o.x+"px";
+  gameBox.appendChild(o);
+  obstacles.push(o);
+},1200);
+
+// Powerups
+setInterval(()=>{
+  const p = document.createElement("div");
+  p.className="powerup";
+  p.x = gameBox.offsetWidth;
+  p.style.left = p.x+"px";
+  gameBox.appendChild(p);
+  powerups.push(p);
+},7000);
+
+function activatePower() {
+  const type = Math.floor(Math.random()*5);
+  shield = jumpBoost = magnet = teleportReady = false;
+
+  if (type===0) shield=true;
+  if (type===1) jumpBoost=true;
+  if (type===2) magnet=true;
+  if (type===3) teleportReady=true;
+  if (type===4) dashActive=true;
+
+  setTimeout(()=>{
+    shield = jumpBoost = magnet = false;
+  },30000);
+}
+
+loop();
+</script>
+</body>
+</html>
