@@ -257,17 +257,38 @@ function endGame(){
 }
 
 
-  
 <script>
+// HI SCORE
+let hiScore = 0;
+
 // START GAME automatisk når siden lastes
 startGame();
 
-// Hent knappen
+// Oppdater UI med Hi-score
+function updateUI() {
+  ui.innerHTML = `
+Poeng: ${score} | Hi-score: ${hiScore}<br>
+Shield: ${Math.max(0,shield|0)}s |
+JumpBoost: ${Math.max(0,jumpBoost|0)}s |
+Magnet: ${Math.max(0,magnet|0)}s<br>
+Dash: ${dashCooldown<=0?"klar":(dashCooldown|0)+"s"} |
+Teleport: ${teleport}
+  `;
+}
+
+// Oppdater UI hver frame
+const uiInterval = setInterval(()=>{
+  if(gameRunning) updateUI();
+}, 16);
+
+// Hent knapp
 const restartBtn = document.querySelector("button");
 
-// Legg på event: start game KUN hvis spillet er over
+// Spill igjen - kun hvis dødd
 restartBtn.addEventListener("click", () => {
-  if(!gameRunning){   // kun hvis du har dødd
+  if(!gameRunning){
+    // Oppdater hi-score hvis score høyere enn før
+    if(score > hiScore) hiScore = score;
     startGame();
   }
 });
