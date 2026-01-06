@@ -256,16 +256,22 @@ function endGame(){
   gameOverEl.style.display="block";
 }
 
-<!-- START AV SCRIPT -->
+
 <script>
-// Denne koden forhindrer at Space trykker på knappen
+// FUNKSJON: forhindrer at Space trykker på knappene
 document.addEventListener("keydown", e => {
+  // Space = hopp, men ikke trigger button
   if(e.code === "Space") {
-    e.preventDefault();
+    // bare forhindrer default når gameRunning = true
+    if(gameRunning) e.preventDefault();
   }
 });
+
+// START GAME på knapp
+document.querySelector("button").addEventListener("click", ()=>{
+  startGame();
+});
 </script>
-<!-- END AV SCRIPT -->
-  
+
 </body>
 </html>
