@@ -73,7 +73,7 @@ V – Teleport
 </div>
 
 <div id="gameOver">GAME OVER</div>
-<button onclick="startGame()">Spill igjen</button>
+<button onclick="startGame()" tabindex="-1">Spill igjen</button>
 
 <script>
 const player = document.getElementById("player");
@@ -256,5 +256,10 @@ function endGame(){
   gameOverEl.style.display="block";
 }
 </script>
+  document.addEventListener("keydown", e => {
+  if (e.code === "Space") {
+    e.preventDefault();
+  }
+});
 </body>
 </html>
