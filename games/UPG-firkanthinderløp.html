@@ -257,13 +257,17 @@ function endGame(){
 }
 
 
+  
 <script>
+// START GAME automatisk når siden lastes
+startGame();
+
 // Hent knappen
 const restartBtn = document.querySelector("button");
 
-// Legg på event
+// Legg på event: start game KUN hvis spillet er over
 restartBtn.addEventListener("click", () => {
-  if(!gameRunning){   // kun hvis spillet er over
+  if(!gameRunning){   // kun hvis du har dødd
     startGame();
   }
 });
