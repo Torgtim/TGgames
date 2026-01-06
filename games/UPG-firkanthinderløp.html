@@ -258,18 +258,14 @@ function endGame(){
 
 
 <script>
-// FUNKSJON: forhindrer at Space trykker på knappene
-document.addEventListener("keydown", e => {
-  // Space = hopp, men ikke trigger button
-  if(e.code === "Space") {
-    // bare forhindrer default når gameRunning = true
-    if(gameRunning) e.preventDefault();
-  }
-});
+// Hent knappen
+const restartBtn = document.querySelector("button");
 
-// START GAME på knapp
-document.querySelector("button").addEventListener("click", ()=>{
-  startGame();
+// Legg på event
+restartBtn.addEventListener("click", () => {
+  if(!gameRunning){   // kun hvis spillet er over
+    startGame();
+  }
 });
 </script>
 
