@@ -3,7 +3,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Hinderløp – Evig</title>
+<title>Hinderløp – Arcade</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
@@ -18,7 +18,7 @@
 
   #gameBox {
     width:520px;
-    height:220px;
+    height:240px;
     margin:20px auto;
     background:#222;
     position:relative;
@@ -37,8 +37,7 @@
 
   .obstacle {
     position:absolute;
-    bottom:0;
-    background:red;
+    border-radius:4px;
   }
 
   #score, #highScore {
@@ -62,7 +61,7 @@
 </head>
 
 <body>
-<h1>Hinderløp – Evig</h1>
+<h1>Hinderløp – Arcade</h1>
 <div id="score">Poeng: 0</div>
 <div id="highScore">High Score: 0</div>
 
@@ -81,7 +80,9 @@ const highScoreEl = document.getElementById("highScore");
 const gameOverEl = document.getElementById("gameOver");
 
 let score = 0;
-let highScore = 0;
+let highScore = localStorage.getItem("hinderHigh") || 0;
+highScoreEl.textContent = "High Score: " + highScore;
+
 let obstacles = [];
 let gameLoopId;
 let obstacleTimer;
@@ -91,8 +92,13 @@ let velocity = 0;
 const gravity = 2;
 const jumpPower = 25;
 
+let baseSpeed = 5;
+
+const colors = ["#ff3b3b", "#ff00ff", "#ffaa00", "#00ff00", "#00aaff"];
+
 function startGame() {
   score = 0;
+  baseSpeed = 5;
   scoreEl.textContent = "Poeng: 0";
   gameOverEl.style.display = "none";
 
@@ -125,12 +131,11 @@ function gameLoop() {
     player.style.bottom = bottom + "px";
   }
 
-  // hindringer
   obstacles.forEach((obs, i) => {
     obs.x -= obs.speed;
     obs.style.left = obs.x + "px";
 
-    // 🚨 RIKTIG KOLLISJON
+    // kollisjon (100 % korrekt)
     const p = player.getBoundingClientRect();
     const o = obs.getBoundingClientRect();
 
@@ -143,12 +148,13 @@ function gameLoop() {
       endGame();
     }
 
-    // poeng
+    // poeng + økende fart
     if (obs.x + obs.offsetWidth < 0) {
       obs.remove();
       obstacles.splice(i,1);
       score++;
       scoreEl.textContent = "Poeng: " + score;
+      baseSpeed += 0.1; // blir raskere over tid
     }
   });
 }
@@ -156,11 +162,25 @@ function gameLoop() {
 function createObstacle() {
   const obs = document.createElement("div");
   obs.className = "obstacle";
-  obs.style.width = 20 + Math.random()*40 + "px";
-  obs.style.height = 20 + Math.random()*70 + "px";
+
+  const width = 20 + Math.random()*40;
+  const height = 20 + Math.random()*70;
+
+  obs.style.width = width + "px";
+  obs.style.height = height + "px";
+  obs.style.background = colors[Math.floor(Math.random()*colors.length)];
+
   obs.x = gameBox.offsetWidth;
-  obs.speed = 5 + Math.random()*3;
+  obs.speed = baseSpeed + Math.random()*2;
   obs.style.left = obs.x + "px";
+
+  // ✈️ 30 % sjanse for flygende hindring
+  if (Math.random() < 0.3) {
+    obs.style.bottom = (60 + Math.random()*100) + "px";
+  } else {
+    obs.style.bottom = "0px";
+  }
+
   gameBox.appendChild(obs);
   obstacles.push(obs);
 }
@@ -172,6 +192,7 @@ function endGame() {
 
   if (score > highScore) {
     highScore = score;
+    localStorage.setItem("hinderHigh", highScore);
     highScoreEl.textContent = "High Score: " + highScore;
   }
 }
