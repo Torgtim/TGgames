@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="no">
 <head>
@@ -6,190 +7,182 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
   body {
-    background: #0f0f0f;
-    color: white;
-    font-family: Arial, sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 20px;
-    user-select: none;
-  }
-
-  h1 {
-    margin-bottom: 10px;
+    background:#0f0f0f;
+    color:white;
+    font-family:Arial, sans-serif;
+    text-align:center;
+    margin:0;
+    padding:20px;
+    user-select:none;
   }
 
   #gameBox {
-    width: 500px;
-    height: 200px;
-    margin: 20px auto;
-    background: #222;
-    position: relative;
-    overflow: hidden;
-    border: 2px solid #fff;
+    width:520px;
+    height:220px;
+    margin:20px auto;
+    background:#222;
+    position:relative;
+    overflow:hidden;
+    border:2px solid white;
   }
 
   #player {
-    width: 40px;
-    height: 40px;
-    background: #0ff;
-    position: absolute;
-    bottom: 0;
-    left: 50px;
+    width:40px;
+    height:40px;
+    background:#00ffff;
+    position:absolute;
+    left:60px;
+    bottom:0;
   }
 
   .obstacle {
-    position: absolute;
-    bottom: 0;
-    background: #f00;
+    position:absolute;
+    bottom:0;
+    background:red;
   }
 
   #score, #highScore {
-    margin: 10px;
-    font-size: 18px;
+    font-size:18px;
+    margin:5px;
   }
 
   #gameOver {
-    font-size: 24px;
-    color: #f00;
-    display: none;
+    font-size:26px;
+    color:red;
+    display:none;
   }
 
   button {
-    margin-top: 10px;
-    padding: 8px 12px;
-    font-size: 16px;
-    cursor: pointer;
+    margin-top:10px;
+    padding:8px 14px;
+    font-size:16px;
+    cursor:pointer;
   }
 </style>
 </head>
+
 <body>
-<h1>Hinderløp – Evig!</h1>
+<h1>Hinderløp – Evig</h1>
 <div id="score">Poeng: 0</div>
 <div id="highScore">High Score: 0</div>
+
 <div id="gameBox">
   <div id="player"></div>
 </div>
-<div id="gameOver">Game Over!</div>
-<button id="restartBtn">Spill igjen</button>
+
+<div id="gameOver">GAME OVER</div>
+<button onclick="startGame()">Spill igjen</button>
 
 <script>
-const player = document.getElementById('player');
-const gameBox = document.getElementById('gameBox');
-const scoreDisplay = document.getElementById('score');
-const highScoreDisplay = document.getElementById('highScore');
-const gameOverDisplay = document.getElementById('gameOver');
-const restartBtn = document.getElementById('restartBtn');
+const player = document.getElementById("player");
+const gameBox = document.getElementById("gameBox");
+const scoreEl = document.getElementById("score");
+const highScoreEl = document.getElementById("highScore");
+const gameOverEl = document.getElementById("gameOver");
 
 let score = 0;
 let highScore = 0;
 let obstacles = [];
-let gameInterval;
-let obstacleInterval;
-let jumping = false;
-let jumpSpeed = 0;
-const gravity = 2; // lav gravity = lengre hopp
-const playerWidth = 40;
-const playerHeight = 40;
+let gameLoopId;
+let obstacleTimer;
 
-// Start spillet
+let jumping = false;
+let velocity = 0;
+const gravity = 2;
+const jumpPower = 25;
+
 function startGame() {
   score = 0;
-  scoreDisplay.textContent = 'Poeng: ' + score;
-  gameOverDisplay.style.display = 'none';
-  obstacles.forEach(obs => obs.remove());
+  scoreEl.textContent = "Poeng: 0";
+  gameOverEl.style.display = "none";
+
+  obstacles.forEach(o => o.remove());
   obstacles = [];
-  player.style.bottom = '0px';
+
+  player.style.bottom = "0px";
+  velocity = 0;
   jumping = false;
-  jumpSpeed = 0;
 
-  clearInterval(gameInterval);
-  clearInterval(obstacleInterval);
+  clearInterval(gameLoopId);
+  clearInterval(obstacleTimer);
 
-  gameInterval = setInterval(gameLoop, 20);
-  obstacleInterval = setInterval(createObstacle, 1500); // ny hindring hvert 1,5 sekund
+  gameLoopId = setInterval(gameLoop, 20);
+  obstacleTimer = setInterval(createObstacle, 1200);
 }
 
-// Hovedspill-løkke
 function gameLoop() {
-  // Hopp
+  // hopp
   if (jumping) {
     let bottom = parseInt(player.style.bottom);
-    bottom += jumpSpeed;
-    jumpSpeed -= gravity;
+    bottom += velocity;
+    velocity -= gravity;
+
     if (bottom <= 0) {
       bottom = 0;
       jumping = false;
-      jumpSpeed = 0;
     }
-    player.style.bottom = bottom + 'px';
+
+    player.style.bottom = bottom + "px";
   }
 
-  // Flytt hindringer
-  obstacles.forEach((obs, index) => {
-    let left = parseInt(obs.style.left);
-    left -= obs.speed;
-    obs.style.left = left + 'px';
+  // hindringer
+  obstacles.forEach((obs, i) => {
+    obs.x -= obs.speed;
+    obs.style.left = obs.x + "px";
 
-    // Kollisjonssjekk
-    let obsLeft = left;
-    let obsRight = obsLeft + parseInt(obs.style.width);
-    let obsTop = parseInt(obs.style.height);
+    // 🚨 RIKTIG KOLLISJON
+    const p = player.getBoundingClientRect();
+    const o = obs.getBoundingClientRect();
 
-    let playerLeft = parseInt(player.style.left);
-    let playerRight = playerLeft + playerWidth;
-    let playerBottom = parseInt(player.style.bottom);
-    let playerTop = playerBottom + playerHeight;
-
-    if (playerRight > obsLeft && playerLeft < obsRight && playerBottom < obsTop) {
-      gameOver(); // **Game Over kun ved kollisjon**
+    if (
+      p.right > o.left &&
+      p.left < o.right &&
+      p.bottom > o.top &&
+      p.top < o.bottom
+    ) {
+      endGame();
     }
 
-    // Fjern hindring når den går ut av skjermen – ingen Game Over
-    if (left + parseInt(obs.style.width) < 0) {
+    // poeng
+    if (obs.x + obs.offsetWidth < 0) {
       obs.remove();
-      obstacles.splice(index, 1);
+      obstacles.splice(i,1);
       score++;
-      scoreDisplay.textContent = 'Poeng: ' + score;
+      scoreEl.textContent = "Poeng: " + score;
     }
   });
 }
 
-// Lag hindring
 function createObstacle() {
-  const obs = document.createElement('div');
-  obs.classList.add('obstacle');
-  obs.style.width = (20 + Math.floor(Math.random() * 30)) + 'px';
-  obs.style.height = (20 + Math.floor(Math.random() * 60)) + 'px';
-  obs.style.left = gameBox.clientWidth + 'px';
-  obs.speed = 5 + Math.random() * 3;
+  const obs = document.createElement("div");
+  obs.className = "obstacle";
+  obs.style.width = 20 + Math.random()*40 + "px";
+  obs.style.height = 20 + Math.random()*70 + "px";
+  obs.x = gameBox.offsetWidth;
+  obs.speed = 5 + Math.random()*3;
+  obs.style.left = obs.x + "px";
   gameBox.appendChild(obs);
   obstacles.push(obs);
 }
 
-// Game Over
-function gameOver() {
-  clearInterval(gameInterval);
-  clearInterval(obstacleInterval);
-  gameOverDisplay.style.display = 'block';
+function endGame() {
+  clearInterval(gameLoopId);
+  clearInterval(obstacleTimer);
+  gameOverEl.style.display = "block";
+
   if (score > highScore) {
     highScore = score;
-    highScoreDisplay.textContent = 'High Score: ' + highScore;
+    highScoreEl.textContent = "High Score: " + highScore;
   }
 }
 
-// Hopp med mellomrom
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && !jumping) {
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && !jumping) {
     jumping = true;
-    jumpSpeed = 25; // høyere hopp
+    velocity = jumpPower;
   }
 });
 
-// Restart-knapp
-restartBtn.addEventListener('click', startGame);
-
-// Start automatisk
 startGame();
 </script>
 </body>
