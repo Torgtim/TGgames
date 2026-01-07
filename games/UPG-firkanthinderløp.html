@@ -123,6 +123,8 @@ startGame();
 function loop(){
   requestAnimationFrame(loop);
   if(!gameRunning) return;
+  // Hold spilleren på fast X-posisjon
+player.style.left = "60px";
 
   // Gravity
   yVel+=gravity;
