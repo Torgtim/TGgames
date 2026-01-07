@@ -110,9 +110,6 @@ let teleport=0;
 let dashCooldown=0;
 let dashFrames=0;
 
-// 🌍 Verden tar deg igjen etter dash
-let worldCatchUp = 0;
-
 function startGame(){
   obstacles.forEach(o=>o.remove());
   powerups.forEach(p=>p.remove());
@@ -124,7 +121,6 @@ function startGame(){
   teleport=0;
   dashCooldown=0;
   dashFrames=0;
-  worldCatchUp=0;
   player.style.left="60px";
   player.style.bottom="0px";
   gameOverEl.style.display="none";
@@ -136,7 +132,7 @@ function loop(){
   requestAnimationFrame(loop);
   if(!gameRunning) return;
 
-  // Spilleren er alltid på samme X
+  // Spilleren holder fast X
   player.style.left="60px";
 
   // Gravity
@@ -159,7 +155,7 @@ function loop(){
 
   // Obstacles
   obstacles.forEach((o,i)=>{
-    o.x -= o.speed + (worldCatchUp>0 ? 8 : 0);
+    o.x -= o.speed + (dashFrames>0 ? 8 : 0);
     o.style.left=o.x+"px";
 
     if(collide(player,o) && shield<=0){
@@ -175,7 +171,7 @@ function loop(){
 
   // Powerups
   powerups.forEach((p,i)=>{
-    p.x -= 4 + (worldCatchUp>0 ? 8 : 0);
+    p.x -= 4 + (dashFrames>0 ? 8 : 0);
     p.style.left=p.x+"px";
     if(collide(player,p)){
       activatePower();
@@ -183,8 +179,6 @@ function loop(){
       powerups.splice(i,1);
     }
   });
-
-  if(worldCatchUp>0) worldCatchUp--;
 
   ui.innerHTML=`
 Poeng: ${score} | Hi-score: ${hiScore}<br>
@@ -212,7 +206,6 @@ document.addEventListener("keydown",e=>{
   if(e.code==="KeyX" && dashCooldown<=0){
     dashFrames=10;
     dashCooldown=2;
-    worldCatchUp = 80; // 🔥 verden tar deg igjen
   }
   if(e.code==="KeyC" && magnet>0){
     player.style.bottom =
