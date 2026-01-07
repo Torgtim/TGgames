@@ -1,1 +1,210 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8">
+<title>CHAOS MODE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+body{
+  margin:0;
+  background:black;
+  color:white;
+  font-family:monospace;
+}
+#world{
+  width:600px;
+  height:300px;
+  border:2px solid white;
+  margin:20px auto;
+  position:relative;
+  overflow:hidden;
+  background:#111;
+}
+#player{
+  width:30px;
+  height:30px;
+  background:cyan;
+  position:absolute;
+  left:100px;
+  bottom:0;
+}
+.platform{
+  position:absolute;
+  background:#444;
+}
+.particle{
+  position:absolute;
+  width:6px;
+  height:6px;
+  background:lime;
+}
+#info{
+  text-align:center;
+  font-size:12px;
+  opacity:0.8;
+}
+</style>
+</head>
 
+<body>
+
+<div id="info">
+<b>CHAOS MODE</b><br>
+WASD / Piler = Bevegelse |
+Space = Hopp |
+X = Dash |
+C = Flip |
+V = Teleport |
+Z = Spinn |
+Shift = Kaos |
+B = Spawn ting |
+N = Fargekaos |
+M = Gravitasjon
+</div>
+
+<div id="world">
+  <div id="player"></div>
+</div>
+
+<script>
+const world = document.getElementById("world");
+const player = document.getElementById("player");
+
+let px=100, py=0;
+let vx=0, vy=0;
+let gravity=1.8;
+let chaos=false;
+let spin=0;
+
+// PLATFORMS
+const platforms=[];
+for(let i=0;i<8;i++){
+  const p=document.createElement("div");
+  p.className="platform";
+  p.style.width=80+Math.random()*100+"px";
+  p.style.height="12px";
+  p.x=Math.random()*500;
+  p.y=Math.random()*250;
+  p.style.left=p.x+"px";
+  p.style.bottom=p.y+"px";
+  world.appendChild(p);
+  platforms.push(p);
+}
+
+// LOOP
+function loop(){
+  requestAnimationFrame(loop);
+
+  // Gravity
+  vy-=gravity;
+  px+=vx;
+  py+=vy;
+
+  // TERRAIN COLLISION
+  platforms.forEach(p=>{
+    const pr=p.getBoundingClientRect();
+    const pl=player.getBoundingClientRect();
+    if(pl.bottom>pr.top && pl.bottom<pr.top+20 &&
+       pl.right>pr.left && pl.left<pr.right && vy<0){
+      py=p.y+12;
+      vy=0;
+    }
+  });
+
+  // WRAP AROUND WORLD
+  if(px>600) px=-30;
+  if(px<-30) px=600;
+  if(py>300) py=-30;
+  if(py<-30) py=300;
+
+  // APPLY
+  player.style.left=px+"px";
+  player.style.bottom=py+"px";
+  player.style.transform=`rotate(${spin}deg)`;
+
+  if(chaos){
+    spin+=10;
+    spawnParticle();
+  }
+}
+loop();
+
+// PARTICLES
+function spawnParticle(){
+  const d=document.createElement("div");
+  d.className="particle";
+  d.style.left=px+15+"px";
+  d.style.bottom=py+15+"px";
+  d.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  world.appendChild(d);
+  setTimeout(()=>d.remove(),600);
+}
+
+// INPUT
+document.addEventListener("keydown",e=>{
+  if(e.code==="ArrowRight"||e.code==="KeyD") vx=4;
+  if(e.code==="ArrowLeft"||e.code==="KeyA") vx=-4;
+  if(e.code==="Space") vy=18;
+
+  // DASH
+  if(e.code==="KeyX"){
+    vx*=3;
+    chaos=true;
+    setTimeout(()=>chaos=false,400);
+  }
+
+  // FLIP
+  if(e.code==="KeyC"){
+    gravity*=-1;
+  }
+
+  // TELEPORT
+  if(e.code==="KeyV"){
+    px=Math.random()*560;
+    py=Math.random()*260;
+  }
+
+  // SPIN
+  if(e.code==="KeyZ"){
+    spin+=90;
+  }
+
+  // ULTRA CHAOS
+  if(e.code==="ShiftLeft"){
+    chaos=!chaos;
+  }
+
+  // SPAWN RANDOM PLATFORM
+  if(e.code==="KeyB"){
+    const p=document.createElement("div");
+    p.className="platform";
+    p.style.width="60px";
+    p.style.height="12px";
+    p.x=Math.random()*500;
+    p.y=Math.random()*260;
+    p.style.left=p.x+"px";
+    p.style.bottom=p.y+"px";
+    world.appendChild(p);
+    platforms.push(p);
+  }
+
+  // COLOR CHAOS
+  if(e.code==="KeyN"){
+    player.style.background=`hsl(${Math.random()*360},100%,50%)`;
+  }
+
+  // GRAVITY RANDOM
+  if(e.code==="KeyM"){
+    gravity=Math.random()*4+0.5;
+  }
+});
+
+document.addEventListener("keyup",e=>{
+  if(["ArrowRight","ArrowLeft","KeyA","KeyD"].includes(e.code)){
+    vx=0;
+  }
+});
+</script>
+
+</body>
+</html>
