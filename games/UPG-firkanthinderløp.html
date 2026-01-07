@@ -28,13 +28,19 @@ body{
   position:absolute;
   left:60px;
   bottom:0;
+  z-index:3;
 }
-.obstacle{position:absolute;background:red}
+.obstacle{
+  position:absolute;
+  background:red;
+  z-index:2;
+}
 .powerup{
   position:absolute;
   width:24px;
   height:24px;
   background:yellow;
+  z-index:1; /* 🔧 bak */
 }
 #ui{text-align:center;font-size:14px}
 #gameOver{
@@ -95,6 +101,10 @@ let gameRunning=true;
 let score=0;
 let hiScore = localStorage.getItem("FH_hi") || 0;
 
+// CAMERA
+let cameraX = 0;
+let cameraDash = 0;
+
 // PHYSICS
 let yVel=0;
 const gravity=2;
@@ -104,7 +114,6 @@ const maxJumps=2;
 // DASH
 let dashFrames=0;
 let dashCooldown=0;
-let dashResetCooldown=0; // 🔧 BUGFIX
 
 // POWERS
 let shield=0, jumpBoost=0, magnet=0;
@@ -112,8 +121,8 @@ let teleport=0;
 
 // START
 function startGame(){
-  obstacles.forEach(o=>o.remove());
-  powerups.forEach(p=>p.remove());
+  obstacles.forEach(o=>o.el.remove());
+  powerups.forEach(p=>p.el.remove());
   obstacles=[];
   powerups=[];
   score=0;
@@ -121,9 +130,10 @@ function startGame(){
   jumpCount=0;
   dashFrames=0;
   dashCooldown=0;
-  dashResetCooldown=0;
   shield=jumpBoost=magnet=0;
   teleport=0;
+  cameraX=0;
+  cameraDash=0;
   player.style.left="60px";
   player.style.bottom="0px";
   gameOverEl.style.display="none";
@@ -136,59 +146,56 @@ function loop(){
   requestAnimationFrame(loop);
   if(!gameRunning) return;
 
-  // GRAVITY
+  /* ===== GRAVITY ===== */
   yVel+=gravity;
   let bottom=parseInt(player.style.bottom)-yVel;
   if(bottom<=0){bottom=0;yVel=0;jumpCount=0}
+  if(bottom>=gameBox.offsetHeight-40){
+    bottom=gameBox.offsetHeight-40;
+    yVel=0;
+  }
   player.style.bottom=bottom+"px";
 
-  // DASH MOVE
+  /* ===== DASH ===== */
   if(dashFrames>0){
-    player.style.left=parseInt(player.style.left)+12+"px";
+    cameraDash += 14;   // 🔧 kamera følger dash
     dashFrames--;
   }
-
-  // DASH RESET (BUGFIX)
-  if(dashResetCooldown>0){
-    dashResetCooldown-=1/60;
-    if(dashResetCooldown<=0){
-      player.style.left="60px";
-    }
-  }
-
   if(dashCooldown>0) dashCooldown-=1/60;
 
-  // OBSTACLES
-  obstacles.forEach((o,i)=>{
-    o.style.left=parseInt(o.style.left)-5+"px";
+  cameraX += cameraDash * 0.2;
+  cameraDash *= 0.85; // smooth stop
 
-    if(collide(player,o) && shield<=0){
+  /* ===== OBSTACLES ===== */
+  obstacles.forEach((o,i)=>{
+    o.el.style.left=(o.x-cameraX)+"px";
+
+    if(collide(player,o.el) && shield<=0){
       endGame();
     }
 
-    if(parseInt(o.style.left)+o.offsetWidth<0){
-      o.remove();
+    if(o.x-cameraX+o.w<0){
+      o.el.remove();
       obstacles.splice(i,1);
       score++;
     }
   });
 
-  // POWERUPS
+  /* ===== POWERUPS ===== */
   powerups.forEach((p,i)=>{
-    p.style.left=parseInt(p.style.left)-4+"px";
-    if(collide(player,p)){
+    p.el.style.left=(p.x-cameraX)+"px";
+    if(collide(player,p.el)){
       activatePower();
-      p.remove();
+      p.el.remove();
       powerups.splice(i,1);
     }
   });
 
-  // TIMERS
+  /* ===== TIMERS ===== */
   if(shield>0) shield-=1/60;
   if(jumpBoost>0) jumpBoost-=1/60;
   if(magnet>0) magnet-=1/60;
 
-  // HISCORE
   if(score>hiScore){
     hiScore=score;
     localStorage.setItem("FH_hi",hiScore);
@@ -205,7 +212,7 @@ Teleport: ${teleport}
 }
 loop();
 
-// INPUT
+/* ===== INPUT ===== */
 document.addEventListener("keydown",e=>{
   if(e.code==="Space" && jumpCount<maxJumps){
     yVel = jumpBoost>0 ? -32 : -25;
@@ -214,11 +221,10 @@ document.addEventListener("keydown",e=>{
   if(e.code==="KeyX" && dashCooldown<=0){
     dashFrames=10;
     dashCooldown=2;
-    dashResetCooldown=1; // 🔧 1 sek før reset
   }
   if(e.code==="KeyC" && magnet>0){
     player.style.bottom =
-      parseInt(player.style.bottom)>0?"0px":"220px";
+      parseInt(player.style.bottom)>0?"0px":(gameBox.offsetHeight-40)+"px";
     yVel=0;
   }
   if(e.code==="KeyV" && teleport>0){
@@ -227,31 +233,35 @@ document.addEventListener("keydown",e=>{
   }
 });
 
-// SPAWN OBSTACLES
+/* ===== SPAWN OBSTACLES ===== */
 setInterval(()=>{
   if(!gameRunning) return;
-  const o=document.createElement("div");
-  o.className="obstacle";
-  o.style.width=60+Math.random()*60+"px";
-  o.style.height=60+Math.random()*100+"px";
-  o.style.bottom=Math.random()<0.25?"120px":"0px";
-  o.style.left=gameBox.offsetWidth+"px";
-  gameBox.appendChild(o);
-  obstacles.push(o);
+  const el=document.createElement("div");
+  el.className="obstacle";
+  const w=60+Math.random()*60;
+  const h=60+Math.random()*100;
+  el.style.width=w+"px";
+  el.style.height=h+"px";
+  el.style.bottom=Math.random()<0.25?"120px":"0px";
+  const x=cameraX+gameBox.offsetWidth+120;
+  el.style.left=(x-cameraX)+"px";
+  gameBox.appendChild(el);
+  obstacles.push({el,x,w});
 },1500);
 
-// SPAWN POWERUPS
+/* ===== SPAWN POWERUPS ===== */
 setInterval(()=>{
   if(!gameRunning) return;
-  const p=document.createElement("div");
-  p.className="powerup";
-  p.style.left=gameBox.offsetWidth+"px";
-  p.style.bottom="0px";
-  gameBox.appendChild(p);
-  powerups.push(p);
+  const el=document.createElement("div");
+  el.className="powerup";
+  const x=cameraX+gameBox.offsetWidth+200;
+  el.style.left=(x-cameraX)+"px";
+  el.style.bottom="0px";
+  gameBox.appendChild(el);
+  powerups.push({el,x});
 },7000);
 
-// POWERS
+/* ===== POWER ===== */
 function activatePower(){
   const t=Math.floor(Math.random()*5);
   if(t===0) shield=15;
@@ -260,7 +270,7 @@ function activatePower(){
   if(t===3) teleport++;
 }
 
-// COLLISION
+/* ===== COLLISION ===== */
 function collide(a,b){
   const r1=a.getBoundingClientRect();
   const r2=b.getBoundingClientRect();
@@ -268,13 +278,13 @@ function collide(a,b){
          r1.bottom>r2.top && r1.top<r2.bottom;
 }
 
-// GAME OVER
+/* ===== GAME OVER ===== */
 function endGame(){
   gameRunning=false;
   gameOverEl.style.display="block";
 }
 
-// RESTART
+/* ===== RESTART ===== */
 restartBtn.addEventListener("click",()=>{
   if(!gameRunning) startGame();
 });
