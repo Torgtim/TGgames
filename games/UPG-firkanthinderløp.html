@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>Firkanthinderløp-UPGRADED</title>
+<title>Firkanthinderløp</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{
@@ -92,29 +91,29 @@ const restartBtn = document.querySelector("button");
 let obstacles=[], powerups=[];
 let gameRunning=true;
 
-// Kamera + score
-let cameraX = 0;
-let score = 0;
+// SCORE
+let score=0;
 let hiScore = localStorage.getItem("FH_hi") || 0;
 
-// Physics
+// PHYSICS
 let yVel=0;
 const gravity=2;
 let jumpCount=0;
 const maxJumps=2;
 
-// Dash
+// DASH
 let dashFrames=0;
 let dashCooldown=0;
+let dashResetCooldown=0; // 🔧 BUGFIX
 
-// Powers (sek)
+// POWERS
 let shield=0, jumpBoost=0, magnet=0;
 let teleport=0;
 
 // START
 function startGame(){
-  obstacles.forEach(o=>o.el.remove());
-  powerups.forEach(p=>p.el.remove());
+  obstacles.forEach(o=>o.remove());
+  powerups.forEach(p=>p.remove());
   obstacles=[];
   powerups=[];
   score=0;
@@ -122,9 +121,9 @@ function startGame(){
   jumpCount=0;
   dashFrames=0;
   dashCooldown=0;
+  dashResetCooldown=0;
   shield=jumpBoost=magnet=0;
   teleport=0;
-  cameraX=0;
   player.style.left="60px";
   player.style.bottom="0px";
   gameOverEl.style.display="none";
@@ -137,56 +136,59 @@ function loop(){
   requestAnimationFrame(loop);
   if(!gameRunning) return;
 
-  // Gravity
+  // GRAVITY
   yVel+=gravity;
   let bottom=parseInt(player.style.bottom)-yVel;
   if(bottom<=0){bottom=0;yVel=0;jumpCount=0}
-  if(bottom>=gameBox.offsetHeight-40){
-    bottom=gameBox.offsetHeight-40;yVel=0
-  }
   player.style.bottom=bottom+"px";
 
-  // Dash
+  // DASH MOVE
   if(dashFrames>0){
     player.style.left=parseInt(player.style.left)+12+"px";
     dashFrames--;
   }
+
+  // DASH RESET (BUGFIX)
+  if(dashResetCooldown>0){
+    dashResetCooldown-=1/60;
+    if(dashResetCooldown<=0){
+      player.style.left="60px";
+    }
+  }
+
   if(dashCooldown>0) dashCooldown-=1/60;
 
-  // Kamera følger spiller
-  cameraX = parseInt(player.style.left) - 60;
-
-  // Obstacles
+  // OBSTACLES
   obstacles.forEach((o,i)=>{
-    o.el.style.left=(o.x-cameraX)+"px";
+    o.style.left=parseInt(o.style.left)-5+"px";
 
-    if(collide(player,o.el) && shield<=0){
+    if(collide(player,o) && shield<=0){
       endGame();
     }
 
-    if(o.x-cameraX+o.w<0){
-      o.el.remove();
+    if(parseInt(o.style.left)+o.offsetWidth<0){
+      o.remove();
       obstacles.splice(i,1);
       score++;
     }
   });
 
-  // Powerups
+  // POWERUPS
   powerups.forEach((p,i)=>{
-    p.el.style.left=(p.x-cameraX)+"px";
-    if(collide(player,p.el)){
+    p.style.left=parseInt(p.style.left)-4+"px";
+    if(collide(player,p)){
       activatePower();
-      p.el.remove();
+      p.remove();
       powerups.splice(i,1);
     }
   });
 
-  // Timers
+  // TIMERS
   if(shield>0) shield-=1/60;
   if(jumpBoost>0) jumpBoost-=1/60;
   if(magnet>0) magnet-=1/60;
 
-  // Hi-score
+  // HISCORE
   if(score>hiScore){
     hiScore=score;
     localStorage.setItem("FH_hi",hiScore);
@@ -212,10 +214,11 @@ document.addEventListener("keydown",e=>{
   if(e.code==="KeyX" && dashCooldown<=0){
     dashFrames=10;
     dashCooldown=2;
+    dashResetCooldown=1; // 🔧 1 sek før reset
   }
   if(e.code==="KeyC" && magnet>0){
     player.style.bottom =
-      parseInt(player.style.bottom)>0?"0px":(gameBox.offsetHeight-40)+"px";
+      parseInt(player.style.bottom)>0?"0px":"220px";
     yVel=0;
   }
   if(e.code==="KeyV" && teleport>0){
@@ -227,32 +230,28 @@ document.addEventListener("keydown",e=>{
 // SPAWN OBSTACLES
 setInterval(()=>{
   if(!gameRunning) return;
-  const el=document.createElement("div");
-  el.className="obstacle";
-  const w=60+Math.random()*60;
-  const h=60+Math.random()*100;
-  el.style.width=w+"px";
-  el.style.height=h+"px";
-  el.style.bottom=Math.random()<0.25?"120px":"0px";
-  const x=cameraX+gameBox.offsetWidth+100;
-  el.style.left=(x-cameraX)+"px";
-  gameBox.appendChild(el);
-  obstacles.push({el,x,w});
+  const o=document.createElement("div");
+  o.className="obstacle";
+  o.style.width=60+Math.random()*60+"px";
+  o.style.height=60+Math.random()*100+"px";
+  o.style.bottom=Math.random()<0.25?"120px":"0px";
+  o.style.left=gameBox.offsetWidth+"px";
+  gameBox.appendChild(o);
+  obstacles.push(o);
 },1500);
 
 // SPAWN POWERUPS
 setInterval(()=>{
   if(!gameRunning) return;
-  const el=document.createElement("div");
-  el.className="powerup";
-  const x=cameraX+gameBox.offsetWidth+200;
-  el.style.left=(x-cameraX)+"px";
-  el.style.bottom="0px";
-  gameBox.appendChild(el);
-  powerups.push({el,x});
+  const p=document.createElement("div");
+  p.className="powerup";
+  p.style.left=gameBox.offsetWidth+"px";
+  p.style.bottom="0px";
+  gameBox.appendChild(p);
+  powerups.push(p);
 },7000);
 
-// POWER
+// POWERS
 function activatePower(){
   const t=Math.floor(Math.random()*5);
   if(t===0) shield=15;
