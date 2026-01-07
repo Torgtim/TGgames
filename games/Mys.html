@@ -2,7 +2,7 @@
 <html lang="no">
 <head>
 <meta charset="UTF-8">
-<title>CHAOS MODE</title>
+<title>CHAOS MODE – TG Games Studio</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 body{
@@ -15,7 +15,7 @@ body{
   width:600px;
   height:300px;
   border:2px solid white;
-  margin:20px auto;
+  margin:20px auto 0;
   position:relative;
   overflow:hidden;
   background:#111;
@@ -38,10 +38,51 @@ body{
   height:6px;
   background:lime;
 }
+
 #info{
   text-align:center;
   font-size:12px;
   opacity:0.8;
+  margin-bottom:10px;
+}
+
+/* ☁️ SKYER UNDER SPILLET */
+#skyArea{
+  width:600px;
+  height:120px;
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+}
+
+.cloud{
+  position:absolute;
+  bottom:20px;
+  width:80px;
+  height:30px;
+  background:#333;
+  border-radius:20px;
+  opacity:0.6;
+  animation: drift linear infinite;
+}
+
+.cloud::before,
+.cloud::after{
+  content:"";
+  position:absolute;
+  background:#333;
+  width:40px;
+  height:40px;
+  border-radius:50%;
+  top:-20px;
+}
+
+.cloud::before{ left:10px; }
+.cloud::after{ left:30px; }
+
+@keyframes drift{
+  from{ transform:translateX(-120px); }
+  to{ transform:translateX(720px); }
 }
 </style>
 </head>
@@ -66,9 +107,12 @@ M = Gravitasjon
   <div id="player"></div>
 </div>
 
+<div id="skyArea"></div>
+
 <script>
 const world = document.getElementById("world");
 const player = document.getElementById("player");
+const skyArea = document.getElementById("skyArea");
 
 let px=100, py=0;
 let vx=0, vy=0;
@@ -76,7 +120,7 @@ let gravity=1.8;
 let chaos=false;
 let spin=0;
 
-// PLATFORMS
+/* PLATFORMS */
 const platforms=[];
 for(let i=0;i<8;i++){
   const p=document.createElement("div");
@@ -91,16 +135,14 @@ for(let i=0;i<8;i++){
   platforms.push(p);
 }
 
-// LOOP
+/* MAIN LOOP */
 function loop(){
   requestAnimationFrame(loop);
 
-  // Gravity
-  vy-=gravity;
-  px+=vx;
-  py+=vy;
+  vy -= gravity;
+  px += vx;
+  py += vy;
 
-  // TERRAIN COLLISION
   platforms.forEach(p=>{
     const pr=p.getBoundingClientRect();
     const pl=player.getBoundingClientRect();
@@ -111,13 +153,12 @@ function loop(){
     }
   });
 
-  // WRAP AROUND WORLD
+  /* WRAP-AROUND WORLD */
   if(px>600) px=-30;
   if(px<-30) px=600;
   if(py>300) py=-30;
   if(py<-30) py=300;
 
-  // APPLY
   player.style.left=px+"px";
   player.style.bottom=py+"px";
   player.style.transform=`rotate(${spin}deg)`;
@@ -129,7 +170,7 @@ function loop(){
 }
 loop();
 
-// PARTICLES
+/* PARTICLES */
 function spawnParticle(){
   const d=document.createElement("div");
   d.className="particle";
@@ -140,41 +181,47 @@ function spawnParticle(){
   setTimeout(()=>d.remove(),600);
 }
 
-// INPUT
+/* ☁️ SKYER */
+function spawnCloud(){
+  const c=document.createElement("div");
+  c.className="cloud";
+  c.style.top=Math.random()*60+"px";
+  c.style.opacity=0.3+Math.random()*0.4;
+  c.style.animationDuration=(20+Math.random()*20)+"s";
+  skyArea.appendChild(c);
+  setTimeout(()=>c.remove(),40000);
+}
+setInterval(spawnCloud,2500);
+
+/* INPUT */
 document.addEventListener("keydown",e=>{
   if(e.code==="ArrowRight"||e.code==="KeyD") vx=4;
   if(e.code==="ArrowLeft"||e.code==="KeyA") vx=-4;
   if(e.code==="Space") vy=18;
 
-  // DASH
   if(e.code==="KeyX"){
     vx*=3;
     chaos=true;
     setTimeout(()=>chaos=false,400);
   }
 
-  // FLIP
   if(e.code==="KeyC"){
     gravity*=-1;
   }
 
-  // TELEPORT
   if(e.code==="KeyV"){
     px=Math.random()*560;
     py=Math.random()*260;
   }
 
-  // SPIN
   if(e.code==="KeyZ"){
     spin+=90;
   }
 
-  // ULTRA CHAOS
   if(e.code==="ShiftLeft"){
     chaos=!chaos;
   }
 
-  // SPAWN RANDOM PLATFORM
   if(e.code==="KeyB"){
     const p=document.createElement("div");
     p.className="platform";
@@ -188,12 +235,10 @@ document.addEventListener("keydown",e=>{
     platforms.push(p);
   }
 
-  // COLOR CHAOS
   if(e.code==="KeyN"){
     player.style.background=`hsl(${Math.random()*360},100%,50%)`;
   }
 
-  // GRAVITY RANDOM
   if(e.code==="KeyM"){
     gravity=Math.random()*4+0.5;
   }
